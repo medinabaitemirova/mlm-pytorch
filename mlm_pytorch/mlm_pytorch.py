@@ -84,10 +84,11 @@ class MLM(nn.Module):
 
         # [mask] input
         replace_prob = prob_mask_like(input, self.replace_prob)
-        masked_input = masked_input.masked_fill(mask * replace_prob, self.mask_token_id)
+        masked_token_mask = mask * replace_prob
+        masked_input = masked_input.masked_fill(masked_token_mask, self.mask_token_id)
 
-        # set inverse of mask to padding tokens for labels
-        labels = input.masked_fill(~mask, self.pad_token_id)
+        # set inverse of mask token mask to padding tokens for labels (will not count in the loss)
+        labels = input.masked_fill(~masked_token_mask, self.pad_token_id)
 
         # get generator output and get mlm loss
         logits = self.transformer(masked_input, **kwargs)
